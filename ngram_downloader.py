@@ -1,6 +1,5 @@
 import urllib
 import urllib2
-from BeautifulSoup import BeautifulSoup
 import urlparse
 import json
 
