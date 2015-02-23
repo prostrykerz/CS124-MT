@@ -9,6 +9,7 @@ class FE_Dict(object):
             "au": ["the"],
 			"aux" : ['the'],
             "ce": ["this", "it", "that"],
+            "ces": ["these", "this", "that"],
             "de": ["of", "to", "from", "by", "with", "than", "at", "out of", "off"],
             "des": ["of"],
             "elle" : ['it', 'she', 'her', 'herself'],
@@ -82,8 +83,7 @@ class FE_Dict(object):
             "anglais": ["English", "British"],
             "supporteurs": ["supporters", "fans", "backer"],
             "groupe": ["group", "band", "batch", "unit", "party", "cluster"],
-            "wagon": ["car", "wagon"]
-            "dans": ["in", "into", "within", "on"],
+            "wagon": ["car", "wagon"],
             "entrer": ["enter", "come in", "go in", "get in"],
             "voulu": ["desired", "intended", "required"],
             "reproduire": ["reproduce", "replicate", "copy", "repeat"],
@@ -146,7 +146,14 @@ class FE_Dict(object):
             "également": ["also", "likewise", "equally", "evenly"],
             "surmontée": ["overcome"],
             "bacon": ["bacon"],
-            "pepperoni": ["pepperoni"]
+            "pepperoni": ["pepperoni"],
+			"graisses":["fats", "greases","flabs","fleshes","greasiness"],
+			"saturées":["saturated"],
+			"trouvent":["find","get","locate","discover","come up with","get it","work","puzzle out","strike on","hit","call"],
+			"principalement":["mainly","primarily","principally","chiefly","mostly","predominately"],
+			"dans":["in","into","within","on","inside","during","along","aboard"],
+			"viandes":["meat"],
+			"grasses":["fat","fleshy","fattish"],
 		}
 	def translate(self, word):
 		return self.dict[word]
