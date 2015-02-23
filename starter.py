@@ -8,11 +8,17 @@ def main():
 
     with io.open("sentences.txt", 'r', encoding="utf-8") as f:
         for line in f:
+            line = line.lower()
             line = line.replace(u'’', 'e ')
             line = line.replace('\'', 'e ')
 
-            print fe_dict.translate("des")
-            print line
+            words = line.split(' ')
+            translation = []
+            for word in words:
+                print word
+                print fe_dict.translate(word)
+
+            # print " ".join(translation)
 
 if __name__ == '__main__':
 	main()
