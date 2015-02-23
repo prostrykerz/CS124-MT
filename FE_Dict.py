@@ -1,4 +1,13 @@
 # coding: utf-8
+from __future__ import unicode_literals
+
+# Helper function to simply tell whether or not the given word is a number.
+def is_num(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 class FE_Dict():
     """docstring for FE_Dict"""
@@ -154,7 +163,14 @@ class FE_Dict():
             "dans":["in","into","within","on","inside","during","along","aboard"],
             "viandes":["meat"],
             "grasses":["fat","fleshy","fattish"],
+            "bloquait":["block","jam","obstruct","close up","lock","clog","trap","tie up","shut out","stop up","peg","snarl"]
         }
 
     def translate(self, word):
+        # Since we don't have translations for every literal number, we'll just
+        # first check to see if the given word is a number. If so, give back
+        # the original word in a list.
+        if is_num(word):
+            return [word]
+
         return self.dict[word]
