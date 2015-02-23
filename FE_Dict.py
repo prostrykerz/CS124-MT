@@ -156,14 +156,25 @@ class FE_Dict():
             "surmontée": ["overcome"],
             "bacon": ["bacon"],
             "pepperoni": ["pepperoni"],
-            "graisses":["fats", "greases","flabs","fleshes","greasiness"],
-            "saturées":["saturated"],
-            "trouvent":["find","get","locate","discover","come up with","get it","work","puzzle out","strike on","hit","call"],
-            "principalement":["mainly","primarily","principally","chiefly","mostly","predominately"],
-            "dans":["in","into","within","on","inside","during","along","aboard"],
-            "viandes":["meat"],
-            "grasses":["fat","fleshy","fattish"],
-            "bloquait":["block","jam","obstruct","close up","lock","clog","trap","tie up","shut out","stop up","peg","snarl"]
+            "graisses": ["fats", "greases","flabs","fleshes","greasiness"],
+            "saturées": ["saturated"],
+            "trouvent": ["find", "get", "locate", "discover", "come up with", "get it", "work", "puzzle out", "strike on", "hit", "call"],
+            "principalement": ["mainly", "primarily", "principally", "chiefly", "mostly", "predominately"],
+            "dans": ["in", "into", "within", "on", "inside", "during", "along", "aboard"],
+            "viandes": ["meat"],
+            "grasses": ["fat", "fleshy", "fattish"],
+            "bloquait": ["block", "jam", "obstruct", "close up", "lock", "clog", "trap", "tie up","shut out","stop up","peg","snarl"],
+            "l'enterprise": ["the company"],
+            "d'un": ["a", "one's"],
+            "d'employés": ["employees"],
+            "s'attaque": ["attacks"],
+            "j'ai": ["I have"],
+            "qu'un": ["that"],
+            "l'ordinateur": ["computer"],
+            "l'intelligence": ["intelligence"],
+            "l'immortalité": ["immortality"],
+            "qu'un": ["that"],
+            "l'explosion": ["explosion"]
         }
 
     def translate(self, word):
