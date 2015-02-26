@@ -5,6 +5,8 @@ import string
 from FE_Dict import FE_Dict
 import nltk
 from nltk.tag.stanford import POSTagger
+from ngram_downloader import get_most_probable_bigram
+import time
 
 # I have already added environment variables as
 
@@ -77,14 +79,62 @@ def pos_order_strategy(sentence, fe_dict):
 
 
     # print " ".join(post_order)
-    translation = []
-    for word, word_type in post_order:
-        t = fe_dict.translate(word)
-        translation.append(t[0])
+    words = [word for word, word_type in post_order]
+    translation = translate_by_picking_best_bigrams(words, fe_dict)
     return " ".join(translation)
     # print "end"
     # tokens = nltk.word_tokenize(processed_sentence)
     # print tokens
+
+def get_cross_product_bigrams(first_list, second_list):
+    result = []
+    for first_list_word in first_list:
+        for second_list_word in second_list:
+            result.append((first_list_word, second_list_word))
+    return result
+
+def translate_by_picking_best_bigrams(words, fe_dict):
+    translation = words
+
+    if len(words) == 0:
+        return translation
+    elif len(words) == 1:
+        # Translate the only word and pick the best unigram.
+        only_word = words[0]
+        t = fe_dict.translate(only_word)
+        translation.append(t[0])
+        return translation
+    # Otherwise, we have at least two words, and can use the regular procedure.
+    else:
+        for i in range(1, len(words)):
+            # If we are looking at the first two words, go ahead and just find
+            # out which translated bigram pair out of the possible translation
+            # bigram pairs ranks the highest on Google's NGrams
+            if (i == 1):
+                # Create the list of bigrams as a list of tuples [(String, String)]
+                first_word_translations = fe_dict.translate(words[i-1])
+                second_word_translations = fe_dict.translate(words[i])
+                bigrams = get_cross_product_bigrams(first_word_translations, second_word_translations)
+
+                # Get the best bigram and use that
+                best_first_word, best_second_word = get_most_probable_bigram(bigrams)
+                translation[i-1] = best_first_word
+                translation[i] = best_second_word
+            else:
+                prev_word = translation[i-1]
+                current_word_translations = fe_dict.translate(words[i])
+                bigrams = get_cross_product_bigrams([prev_word], current_word_translations)
+
+                # Space out consecutive requests by 5 seconds to avoid getting
+                # HTTP 429: Too Many Requests errors
+                time.sleep(1.0)
+
+                # 'prev_word' cannot possibly have changed from earlier since we passed
+                # in a list of size one to the first argument for get_cross_product_bigrams
+                prev_word, best_curr_word = get_most_probable_bigram(bigrams)
+                translation[i] = best_curr_word
+
+        return translation
 
 def main():
     fe_dict = FE_Dict()
