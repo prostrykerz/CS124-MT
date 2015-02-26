@@ -43,35 +43,48 @@ def baseline_translate(sentence, fe_dict):
 
 def pos_order_strategy(sentence, fe_dict):
     words = preprocess_words(sentence)
-    st = POSTagger(r'stanford-postagger/models/french.tagger',r'stanford-postagger/stanford-postagger.jar', encoding="utf-8"    )
+    st = POSTagger(r'stanford-postagger/models/french.tagger', r'stanford-postagger/stanford-postagger.jar', encoding="utf-8"    )
     # print "round"
     # print words
     tokens = st.tag(words)
     # print tokens
     last_word_type = ""
     last_word = ""
+    post_order = tokens
+
+    # Invert tokens if they show up in (NOUN, ADJ) order to be (ADJ, NOUN)
     adjs = ['ADJ']
     nouns = ['NC','N']
-    post_order = []
-    for word, word_type in tokens:
-        if last_word_type in nouns and word_type in adjs:
-            post_order[-1] = word
-            post_order.append(last_word)
-        else:
-            post_order.append(word)
-        last_word_type = word_type
-        last_word = word
+    for i in range(1, len(post_order)):
+        prev_word, prev_word_type = post_order[i-1]
+        curr_word, curr_word_type = post_order[i]
+
+        if (prev_word_type in nouns) and (curr_word_type in adjs):
+            post_order[i] = (prev_word, prev_word_type)
+            post_order[i-1] = (curr_word, curr_word_type)
+
+    # Invert tokens if they show up as (REFLEXIVE PRONOUN, VERB) to be
+    # (VERB, REFLEXIVE PRONOUN)
+    verbs = ["V", "VIMP", "VINF", "VPP", "VPR", "VS"]
+    reflexive_pronouns = ['CLO']
+    for i in range(1, len(post_order)):
+        prev_word, prev_word_type = post_order[i-1]
+        curr_word, curr_word_type = post_order[i]
+
+        if (prev_word_type in reflexive_pronouns) and (curr_word_type in verbs):
+            post_order[i] = (prev_word, prev_word_type)
+            post_order[i-1] = (curr_word, curr_word_type)
+
 
     # print " ".join(post_order)
     translation = []
-    for word in post_order:
+    for word, word_type in post_order:
         t = fe_dict.translate(word)
         translation.append(t[0])
     return " ".join(translation)
     # print "end"
     # tokens = nltk.word_tokenize(processed_sentence)
     # print tokens
-
 
 def main():
     fe_dict = FE_Dict()
