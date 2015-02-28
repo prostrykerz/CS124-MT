@@ -7,6 +7,7 @@ import nltk
 from nltk.tag.stanford import POSTagger
 from ngram_downloader import get_ngram_probabilities
 from pprint import pprint
+import Pluralizer
 
 # I have already added environment variables as
 
@@ -95,14 +96,22 @@ def pos_order_strategy(sentence, fe_dict):
 
     # print " ".join(post_order)
     # print post_order
+
     translation = []
     for i, (word, word_type) in enumerate(post_order):
         t = fe_dict.translate(word)
-        w_t = translateWithSelectGender(word, t, i, post_order)
-        # Just in case the translation from the dictionary is comprised of multiple words. i.e. "accédera" -> "will access"
-        translation.extend(w_t.split())
+        w_t = translateWithSelectGender(word, word_type, t, i, post_order)
+        translation.append(w_t)
 
-    return " ".join(get_rid_of_unnecessary_words(translation))
+    fixed_translation = pLuRaLiZe_wOrDs(translation)
+
+    new_translation = []
+    for w in fixed_translation:
+        new_translation.extend(w.split())
+    # new_translation.extend([w.split() for w in fixed_translation])
+    print new_translation
+
+    return " ".join(get_rid_of_unnecessary_words(fixed_translation))
     # print "end"
     # tokens = nltk.word_tokenize(processed_sentence)
     # print tokens
@@ -157,7 +166,43 @@ def get_rid_of_unnecessary_words(translation):
             refined_translation.append(word)
     return refined_translation
 
-def translateWithSelectGender(word, translations, i, post_order):
+def pLuRaLiZe_wOrDs(words):
+    prevWord = ""
+    prevWordType = ""
+    nouns = ["NC"]
+    verbs = ["V","VPR"]
+    not_allowed_verbs = ["VINF","VIMP","VPP","VPR","VS","V"]
+    st = POSTagger(r'stanford-postagger/models/english-bidirectional-distsim.tagger', r'stanford-postagger/stanford-postagger.jar', encoding="utf-8")
+    ret = []
+    # print words
+
+    english_singular_nouns = ["NN"]
+    for i, (w, wt) in enumerate(words):
+        if wt in verbs and prevWordType in nouns:
+            n = ""
+            if i < len(words)-1:
+                nw, nwt = words[i+1]
+                if nwt not in not_allowed_verbs:
+                    token = st.tag([prevWord])
+                    n = token[0][1]
+                    # print n
+            else:
+                token = st.tag([prevWord])
+                n = token[0][1]
+
+            if n!="" and n in english_singular_nouns:
+                pluralized_verb = Pluralizer.pluralize(w)
+                prevWord = w
+                prevWordType = wt
+                ret.append(pluralized_verb)
+                continue
+        prevWord = w
+        prevWordType = wt
+        ret.append(w)
+
+    return ret
+
+def translateWithSelectGender(word, word_type, translations, i, post_order):
     # print word
     if word == "se":
         if i >= 2:
@@ -165,12 +210,12 @@ def translateWithSelectGender(word, translations, i, post_order):
             if prevWord == "il":
                 for t in translations:
                     if  t == "himself":
-                        return t
+                        return (t, word_type)
             if prevWord == "elle":
                 for t in translations:
                     if  t == "herself":
-                        return t
-    return translations[0]
+                        return (t, word_type)
+    return (translations[0], word_type)
 
 def main():
     fe_dict = FE_Dict()
@@ -178,7 +223,7 @@ def main():
     with io.open("data/dev_set.txt", 'r', encoding="utf-8") as f:
         for line in f:
             baseline = baseline_translate(line, fe_dict)
-            print baseline
+            # print baseline
 
             pos_translation = pos_order_strategy(line, fe_dict)
             print pos_translation + "\n"
