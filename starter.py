@@ -5,6 +5,8 @@ import string
 from FE_Dict import FE_Dict
 import nltk
 from nltk.tag.stanford import POSTagger
+from ngram_downloader import get_ngram_probabilities
+from pprint import pprint
 
 # I have already added environment variables as
 
@@ -97,11 +99,63 @@ def pos_order_strategy(sentence, fe_dict):
     for i, (word, word_type) in enumerate(post_order):
         t = fe_dict.translate(word)
         w_t = translateWithSelectGender(word, t, i, post_order)
-        translation.append(w_t)
-    return " ".join(translation)
+        # Just in case the translation from the dictionary is comprised of multiple words. i.e. "accédera" -> "will access"
+        translation.extend(w_t.split())
+
+    return " ".join(get_rid_of_unnecessary_words(translation))
     # print "end"
     # tokens = nltk.word_tokenize(processed_sentence)
     # print tokens
+
+def get_rid_of_unnecessary_words(translation):
+    words_to_remove = ["the", "to", "a"] #, "to", "a"]
+
+    # List to keep track of indexes where the word ['the', 'to', 'a'] appear, so that
+    # we can remove them after.
+    indexes_to_remove = []
+
+    all_ngrams_to_examine = []
+    for i in range(1, len(translation)-1):
+        word = translation[i]
+        if word in words_to_remove:
+            prev_word = translation[i-1]
+            next_word = translation[i+1]
+
+            # Heuristic: usually, "to the" and "of the" should be left alone
+            if (word == "to" and next_word == "the") or (word == "of" and next_word == "the"):
+                continue
+
+            # In case somewhere in the sentence we have something of the form
+            # "A the B", compare the bigram probabilities of (A,B) with (the, B)
+            # to determine whether or not we keep the word "the". This holds for the words "to" and "a" as well.
+            ngrams = [(prev_word, next_word), (prev_word, word, next_word)]
+            all_ngrams_to_examine.extend(ngrams)
+
+    # This way, we can perform a batch request for all the ngrams so we reduce risk of HTTP 429 errors
+    ngram_probabilities = get_ngram_probabilities(all_ngrams_to_examine)
+
+    # Do the same loop again, but now that we have the ngram probabilities we can do our comparisons.
+    for i in range(1, len(translation)-1):
+        word = translation[i]
+        if word in words_to_remove:
+            prev_word = translation[i-1]
+            next_word = translation[i+1]
+
+            ngrams = [(prev_word, next_word), (prev_word, word, next_word)]
+            # Two cases for where we should remove the middle word, 'word':
+            #     a) Both ngrams are in the dictionary, and prob(prev_word, next_word) > prob(prev_word, word, next_word)
+            #     b) Only the (prev_word, next_word) is in dictionary, meaning (prev_word, word, next_word) is never found (=> extremely rare)
+            if ((ngrams[0] in ngram_probabilities) and (ngrams[1] in ngram_probabilities) and (ngram_probabilities[ngrams[0]] > ngram_probabilities[ngrams[1]])) or ((ngrams[0] in ngram_probabilities) and (ngrams[1] not in ngram_probabilities)):
+                indexes_to_remove.append(i)
+
+
+    # Get rid of the 'the' words in the list indexes_of_the_to_remove
+    refined_translation = []
+    for i in range(len(translation)):
+        word = translation[i]
+        if i not in indexes_to_remove:
+            refined_translation.append(word)
+    return refined_translation
 
 def translateWithSelectGender(word, translations, i, post_order):
     # print word
@@ -127,7 +181,7 @@ def main():
             print baseline
 
             pos_translation = pos_order_strategy(line, fe_dict)
-            print pos_translation
+            print pos_translation + "\n"
 
 if __name__ == '__main__':
-	main()
+    main()
