@@ -181,7 +181,6 @@ def pLuRaLiZe_wOrDs(words):
     # print words
 
     english_singular_nouns = ["NN"]
-
     for i, (w, wt) in enumerate(words):
         if w not in not_allowed_verbWords and wt in verbs and prevWordType in nouns:
             n = ""
@@ -236,7 +235,7 @@ def main():
             # print baseline
 
             pos_translation = pos_order_strategy(line, fe_dict)
-            print pos_translation + "\n"
+            print pos_translation.capitalize() + ".\n"
 
 if __name__ == '__main__':
     main()
