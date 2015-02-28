@@ -139,6 +139,10 @@ def get_rid_of_unnecessary_words(translation):
             ngrams = [(prev_word, next_word), (prev_word, word, next_word)]
             all_ngrams_to_examine.extend(ngrams)
 
+    # If there is nothing to examine, break out and return the original translation
+    if len(all_ngrams_to_examine) == 0:
+        return translation
+
     # This way, we can perform a batch request for all the ngrams so we reduce risk of HTTP 429 errors
     ngram_probabilities = get_ngram_probabilities(all_ngrams_to_examine)
 
@@ -225,7 +229,7 @@ def translateWithSelectGender(word, word_type, translations, i, post_order):
 def main():
     fe_dict = FE_Dict()
 
-    with io.open("data/dev_set.txt", 'r', encoding="utf-8") as f:
+    with io.open("data/test_set.txt", 'r', encoding="utf-8") as f:
         for line in f:
             baseline = baseline_translate(line, fe_dict)
             # print baseline

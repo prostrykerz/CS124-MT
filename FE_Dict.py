@@ -27,6 +27,7 @@ class FE_Dict():
             "est": ["is", "east", "eastern"],
             "et": ["and"],
             "il": ["he", "it", 'him', 'himself'],
+            "y": ["there"],
             "ils": ["they", "those"],
             "je": ["I"],
             "le": ["the", "it", "him"],
