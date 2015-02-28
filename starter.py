@@ -108,8 +108,6 @@ def pos_order_strategy(sentence, fe_dict):
     new_translation = []
     for w in fixed_translation:
         new_translation.extend(w.split())
-    # new_translation.extend([w.split() for w in fixed_translation])
-    print new_translation
 
     return " ".join(get_rid_of_unnecessary_words(fixed_translation))
     # print "end"
