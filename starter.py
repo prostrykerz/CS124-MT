@@ -175,6 +175,7 @@ def pLuRaLiZe_wOrDs(words):
     nouns = ["NC"]
     verbs = ["V","VPR"]
     not_allowed_verbs = ["VINF","VIMP","VPP","VPR","VS","V"]
+    not_allowed_verbWords = ["is", "am", "are", "was", "were", "be", "being", "been"]
     st = POSTagger(r'stanford-postagger/models/english-bidirectional-distsim.tagger', r'stanford-postagger/stanford-postagger.jar', encoding="utf-8")
     ret = []
     # print words
@@ -182,7 +183,7 @@ def pLuRaLiZe_wOrDs(words):
     english_singular_nouns = ["NN"]
 
     for i, (w, wt) in enumerate(words):
-        if wt in verbs and prevWordType in nouns:
+        if w not in not_allowed_verbWords and wt in verbs and prevWordType in nouns:
             n = ""
             if i < len(words)-1:
                 nw, nwt = words[i+1]
