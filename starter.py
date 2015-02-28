@@ -45,26 +45,27 @@ def remove_se_strategy(words):
     new_words = []
     last_word = ""
     for i, w in enumerate(words):
-        if w != "se" and (last_word != "il" and last_word != "elle"):
+        if w != "se" or last_word == "il" or last_word == "elle":
             new_words.append(w)
         last_word = w
     return new_words
 
 def pos_order_strategy(sentence, fe_dict):
     words = preprocess_words(sentence)
-    print words
+    # print words
     words = remove_se_strategy(words)
-    print words
+    # print words
 
     st = POSTagger(r'stanford-postagger/models/french.tagger', r'stanford-postagger/stanford-postagger.jar', encoding="utf-8"    )
     # print "round"
     # print words
     tokens = st.tag(words)
     # print tokens
+    # print tokens
     last_word_type = ""
     last_word = ""
     post_order = tokens
-
+    # print post_order
     # Invert tokens if they show up in (NOUN, ADJ) order to be (ADJ, NOUN)
     adjs = ['ADJ']
     nouns = ['NC','N']
@@ -78,8 +79,9 @@ def pos_order_strategy(sentence, fe_dict):
 
     # Invert tokens if they show up as (REFLEXIVE PRONOUN, VERB) to be
     # (VERB, REFLEXIVE PRONOUN)
+    # print post_order
     verbs = ["V", "VIMP", "VINF", "VPP", "VPR", "VS"]
-    reflexive_pronouns = ['CLO']
+    reflexive_pronouns = ['CLO', 'CLR']
     for i in range(1, len(post_order)):
         prev_word, prev_word_type = post_order[i-1]
         curr_word, curr_word_type = post_order[i]
@@ -90,14 +92,31 @@ def pos_order_strategy(sentence, fe_dict):
 
 
     # print " ".join(post_order)
+    # print post_order
     translation = []
-    for word, word_type in post_order:
+    for i, (word, word_type) in enumerate(post_order):
         t = fe_dict.translate(word)
-        translation.append(t[0])
+        w_t = translateWithSelectGender(word, t, i, post_order)
+        translation.append(w_t)
     return " ".join(translation)
     # print "end"
     # tokens = nltk.word_tokenize(processed_sentence)
     # print tokens
+
+def translateWithSelectGender(word, translations, i, post_order):
+    # print word
+    if word == "se":
+        if i >= 2:
+            prevWord, prevWordType = post_order[i-2]
+            if prevWord == "il":
+                for t in translations:
+                    if  t == "himself":
+                        return t
+            if prevWord == "elle":
+                for t in translations:
+                    if  t == "herself":
+                        return t
+    return translations[0]
 
 def main():
     fe_dict = FE_Dict()
