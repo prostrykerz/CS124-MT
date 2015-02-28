@@ -180,7 +180,7 @@ def pLuRaLiZe_wOrDs(words):
     # print words
 
     english_singular_nouns = ["NN"]
-    print words
+
     for i, (w, wt) in enumerate(words):
         if wt in verbs and prevWordType in nouns:
             n = ""
