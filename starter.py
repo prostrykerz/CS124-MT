@@ -101,7 +101,8 @@ def pos_order_strategy(sentence, fe_dict):
     for i, (word, word_type) in enumerate(post_order):
         t = fe_dict.translate(word)
         w_t = translateWithSelectGender(word, word_type, t, i, post_order)
-        translation.append(w_t)
+        for wordAndType in w_t:
+            translation.append(wordAndType)
 
     fixed_translation = pLuRaLiZe_wOrDs(translation)
 
@@ -175,6 +176,7 @@ def pLuRaLiZe_wOrDs(words):
     # print words
 
     english_singular_nouns = ["NN"]
+    print words
     for i, (w, wt) in enumerate(words):
         if wt in verbs and prevWordType in nouns:
             n = ""
@@ -208,12 +210,17 @@ def translateWithSelectGender(word, word_type, translations, i, post_order):
             if prevWord == "il":
                 for t in translations:
                     if  t == "himself":
-                        return (t, word_type)
+                        return [(t, word_type)]
             if prevWord == "elle":
                 for t in translations:
                     if  t == "herself":
-                        return (t, word_type)
-    return (translations[0], word_type)
+                        return [(t, word_type)]
+
+    words = translations[0].split()
+    ret = []
+    for w in words:
+        ret.append((w, word_type))
+    return ret
 
 def main():
     fe_dict = FE_Dict()
