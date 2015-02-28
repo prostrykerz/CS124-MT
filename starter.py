@@ -41,8 +41,21 @@ def baseline_translate(sentence, fe_dict):
 
     return " ".join(translation)
 
+def remove_se_strategy(words):
+    new_words = []
+    last_word = ""
+    for i, w in enumerate(words):
+        if w != "se" and (last_word != "il" and last_word != "elle"):
+            new_words.append(w)
+        last_word = w
+    return new_words
+
 def pos_order_strategy(sentence, fe_dict):
     words = preprocess_words(sentence)
+    print words
+    words = remove_se_strategy(words)
+    print words
+
     st = POSTagger(r'stanford-postagger/models/french.tagger', r'stanford-postagger/stanford-postagger.jar', encoding="utf-8"    )
     # print "round"
     # print words
@@ -93,6 +106,7 @@ def main():
         for line in f:
             baseline = baseline_translate(line, fe_dict)
             print baseline
+
             pos_translation = pos_order_strategy(line, fe_dict)
             print pos_translation
 
