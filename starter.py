@@ -15,6 +15,7 @@ import Pluralizer
 # STANFORD_MODELS =  D:/stanford-postagger/models/
 
 
+# Preprocess the words
 def preprocess_words(sentence):
     # Convert apostrophes to 'e ', such that
     # L'enterprise  => Le enterprise
@@ -34,6 +35,8 @@ def preprocess_words(sentence):
     sentence = "".join([ch for ch in sentence if ch not in string.punctuation])
     return sentence.lower().split(' ')
 
+# Baseline algorithm to translate
+# Direct translation
 def baseline_translate(sentence, fe_dict):
     words = preprocess_words(sentence)
     translation = []
@@ -44,6 +47,7 @@ def baseline_translate(sentence, fe_dict):
 
     return " ".join(translation)
 
+# Remove the se if it didn't follow an il or an elle
 def remove_se_strategy(words):
     new_words = []
     last_word = ""
@@ -53,22 +57,19 @@ def remove_se_strategy(words):
         last_word = w
     return new_words
 
+# Switched the words based on Part of Speech
 def pos_order_strategy(sentence, fe_dict):
     words = preprocess_words(sentence)
-    # print words
     words = remove_se_strategy(words)
-    # print words
 
     st = POSTagger(r'stanford-postagger/models/french.tagger', r'stanford-postagger/stanford-postagger.jar', encoding="utf-8"    )
-    # print "round"
-    # print words
+
     tokens = st.tag(words)
-    # print tokens
-    # print tokens
+
     last_word_type = ""
     last_word = ""
     post_order = tokens
-    # print post_order
+
     # Invert tokens if they show up in (NOUN, ADJ) order to be (ADJ, NOUN)
     adjs = ['ADJ']
     nouns = ['NC','N']
@@ -82,7 +83,6 @@ def pos_order_strategy(sentence, fe_dict):
 
     # Invert tokens if they show up as (REFLEXIVE PRONOUN, VERB) to be
     # (VERB, REFLEXIVE PRONOUN)
-    # print post_order
     verbs = ["V", "VIMP", "VINF", "VPP", "VPR", "VS"]
     reflexive_pronouns = ['CLO', 'CLR']
     for i in range(1, len(post_order)):
@@ -92,10 +92,6 @@ def pos_order_strategy(sentence, fe_dict):
         if (prev_word_type in reflexive_pronouns) and (curr_word_type in verbs):
             post_order[i] = (prev_word, prev_word_type)
             post_order[i-1] = (curr_word, curr_word_type)
-
-
-    # print " ".join(post_order)
-    # print post_order
 
     translation = []
     for i, (word, word_type) in enumerate(post_order):
@@ -111,10 +107,8 @@ def pos_order_strategy(sentence, fe_dict):
         new_translation.extend(w.split())
 
     return " ".join(get_rid_of_unnecessary_words(fixed_translation))
-    # print "end"
-    # tokens = nltk.word_tokenize(processed_sentence)
-    # print tokens
 
+# Gets rid of unnecessary words
 def get_rid_of_unnecessary_words(translation):
     words_to_remove = ["the", "to", "a"] #, "to", "a"]
 
@@ -169,6 +163,7 @@ def get_rid_of_unnecessary_words(translation):
             refined_translation.append(word)
     return refined_translation
 
+# Pluralizes the verbs following a singular noun
 def pLuRaLiZe_wOrDs(words):
     prevWord = ""
     prevWordType = ""
@@ -203,11 +198,10 @@ def pLuRaLiZe_wOrDs(words):
         prevWord = w
         prevWordType = wt
         ret.append(w)
-
     return ret
 
+# Translate se to himself if it follows il and to herself if it follows elle
 def translateWithSelectGender(word, word_type, translations, i, post_order):
-    # print word
     if word == "se":
         if i >= 2:
             prevWord, prevWordType = post_order[i-2]
@@ -228,7 +222,6 @@ def translateWithSelectGender(word, word_type, translations, i, post_order):
 
 def main():
     fe_dict = FE_Dict()
-
     with io.open("data/test_set.txt", 'r', encoding="utf-8") as f:
         for line in f:
             baseline = baseline_translate(line, fe_dict)
